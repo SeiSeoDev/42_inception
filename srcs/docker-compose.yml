@@ -1,0 +1,66 @@
+version : '3'
+
+services:
+  mysql:
+    build:
+      context: ./requirements/mysql
+    container_name: "mysql"
+    volumes:
+      - mysql-data:/var/lib/mysql
+    networks:
+      - inception_network
+    env_file:
+      - .env
+    ports:
+      - "3306:3306"
+    restart: always
+
+  wordpress:
+    build:
+      context: ./requirements/wordpress
+    depends_on:
+      - mysql
+    volumes:
+      - wordpress-data:/var/www/html
+    networks:
+      - inception_network
+    working_dir: /var/www/html
+    ports:
+      - "9000:9000"
+    env_file:
+      - .env
+    restart: always
+
+  nginx:
+    build:
+      context: ./requirements/nginx
+    depends_on:
+      - wordpress
+    volumes:
+      - wordpress-data:/var/www/html
+    networks:
+      - inception_network
+    ports:
+      - "443:443"
+    restart: always
+
+networks:
+  inception_network:
+    driver: bridge
+
+volumes:
+  mysql-data:
+    driver: local
+    driver_opts:
+      type: none
+      device: /Users/seiseo/data/mysql-data
+      o: bind
+  wordpress-data:
+    driver: local
+    driver_opts:
+      type: none
+      device: /Users/seiseo/data/wordpress-data
+      o: bind
+
+# /Users/seiseo/inception_test
+# /home/dasanter
